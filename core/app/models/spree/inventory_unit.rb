@@ -27,6 +27,8 @@ module Spree
 
     validates_presence_of :shipment, :line_item, :variant
 
+    validates :quantity, numericality: { greater_than: 0 }
+
     before_destroy :ensure_can_destroy
 
     scope :pending, -> { where pending: true }
