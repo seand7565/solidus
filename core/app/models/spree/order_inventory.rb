@@ -20,7 +20,7 @@ module Spree
     def verify(shipment = nil)
       if order.completed? || shipment.present?
 
-        existing_quantity = inventory_units.count
+        existing_quantity = inventory_units.sum(&:quantity)
         desired_quantity = line_item.quantity - existing_quantity
         if desired_quantity > 0
           shipment ||= determine_target_shipment
@@ -96,12 +96,12 @@ module Spree
       removed_quantity = 0
 
       shipment_units.each do |inventory_unit|
-        break if removed_quantity == quantity
+        break if removed_quantity == quantity #TODO:this? Seems like this is deleting IUs but individually - should just remove from quantity
         inventory_unit.destroy
         removed_quantity += 1
       end
 
-      if shipment.inventory_units.count.zero?
+      if shipment.inventory_units.sum(&:quantity).zero?
         order.shipments.destroy(shipment)
       end
 

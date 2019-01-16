@@ -100,7 +100,7 @@ module Spree
     # If stock was -20 but then was -25 (decrease of 5 units), do nothing.
     def process_backorders(number)
       if number > 0
-        backordered_inventory_units.first(number).each(&:fill_backorder)
+        backordered_inventory_units.first(number).each(&:fill_backorder) #TODO: Change this to work with qty
       end
     end
 

@@ -186,7 +186,7 @@ module Spree
     #
     # @return [Fixnum]
     def on_backorder
-      inventory_units.with_state('backordered').size
+      inventory_units.with_state('backordered').sum(&:quantity)
     end
 
     # @return [Boolean] true if this variant can be backordered

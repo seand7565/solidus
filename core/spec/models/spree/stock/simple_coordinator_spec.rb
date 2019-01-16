@@ -115,8 +115,8 @@ module Spree
           it "packages correctly" do
             expect(shipments).not_to be_empty
             inventory_units = shipments.flat_map { |s| s.inventory_units }
-            expect(inventory_units.size).to eq(5)
-            expect(inventory_units.uniq.size).to eq(5)
+            expect(inventory_units.sum(&:quantity)).to eq(5)
+            expect(inventory_units.uniq.sum(&:quantity)).to eq(5)
           end
         end
 

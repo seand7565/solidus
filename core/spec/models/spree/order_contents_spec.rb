@@ -32,14 +32,14 @@ RSpec.describe Spree::OrderContents, type: :model do
       context "with quantity=1" do
         it "creates correct inventory" do
           subject.add(variant, 1, shipment: shipment)
-          expect(order.inventory_units.count).to eq(1)
+          expect(order.inventory_units.sum(&:quantity)).to eq(1)
         end
       end
 
       context "with quantity=2" do
         it "creates correct inventory" do
           subject.add(variant, 2, shipment: shipment)
-          expect(order.inventory_units.count).to eq(2)
+          expect(order.inventory_units.sum(&:quantity)).to eq(2)
         end
       end
 
@@ -47,7 +47,7 @@ RSpec.describe Spree::OrderContents, type: :model do
         it "creates correct inventory" do
           subject.add(variant, 1, shipment: shipment)
           subject.add(variant, 1, shipment: shipment)
-          expect(order.inventory_units.count).to eq(2)
+          expect(order.inventory_units.sum(&:quantity)).to eq(2)
         end
       end
     end

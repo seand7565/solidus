@@ -29,7 +29,7 @@ module Spree
         @stock_locations = Spree::Config.stock.location_sorter_class.new(Spree::StockLocation.active).sort
 
         @inventory_units_by_variant = @inventory_units.group_by(&:variant)
-        @desired = Spree::StockQuantities.new(@inventory_units_by_variant.transform_values(&:count)) #TODO:
+        @desired = Spree::StockQuantities.new(@inventory_units_by_variant.transform_values{|v| v.sum(&:quantity)})
         @availability = Spree::Stock::Availability.new(
           variants: @desired.variants,
           stock_locations: @stock_locations
@@ -62,8 +62,8 @@ module Spree
 
           # Turn our raw quantities into a Stock::Package
           package = Spree::Stock::Package.new(stock_location)
-          package.add_multiple(get_units(on_hand), :on_hand) #TODO: May need to adjust add_multiple to just add one.
-          package.add_multiple(get_units(backordered), :backordered) #TODO: May need to adjust add_multiple to just add one.
+          package.add_multiple(get_units(on_hand), :on_hand)
+          package.add_multiple(get_units(backordered), :backordered)
 
           package
         end.compact

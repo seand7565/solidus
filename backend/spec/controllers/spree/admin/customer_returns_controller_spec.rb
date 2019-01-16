@@ -92,7 +92,7 @@ module Spree
 
             it "loads the possible return items" do
               rma_return_item_count = rma.return_items.count
-              total_unit_count = order.inventory_units.count
+              total_unit_count = order.inventory_units.sum(&:quantity)
               customer_returned_count = previous_customer_return.return_items.count
               expected_total = total_unit_count - customer_returned_count - rma_return_item_count
               expect(assigns(:new_return_items).length).to eq expected_total

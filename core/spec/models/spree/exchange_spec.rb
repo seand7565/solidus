@@ -35,7 +35,7 @@ module Spree
       let(:return_item) { create(:exchange_return_item, inventory_unit: inventory_unit) }
       let(:return_items) { [return_item] }
 
-      let(:inventory_unit) { create(:inventory_unit, order: order, line_item: line_item) }
+      let(:inventory_unit) { create(:inventory_unit, order: order, line_item: line_item, quantity: 1) }
       let(:order) { create(:shipped_order, line_items_count: 1) }
       let(:line_item) { order.line_items.first }
 
@@ -47,7 +47,7 @@ module Spree
         new_shipment = order.shipments.last
         expect(new_shipment).to be_ready
         new_inventory_units = new_shipment.inventory_units
-        expect(new_inventory_units.count).to eq 1
+        expect(new_inventory_units.sum(&:quantity)).to eq 1
         expect(new_inventory_units.first.original_return_item).to eq return_item
         expect(new_inventory_units.first.line_item).to eq return_item.inventory_unit.line_item
       end

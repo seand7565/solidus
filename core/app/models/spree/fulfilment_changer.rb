@@ -54,7 +54,7 @@ module Spree
       ActiveRecord::Base.transaction do
         if handle_stock_counts?
           # We only run this query if we need it.
-          current_on_hand_quantity = [current_shipment.inventory_units.pre_shipment.size, quantity].min
+          current_on_hand_quantity = [current_shipment.inventory_units.pre_shipment.sum(&:quantity), quantity].min
 
           # Restock things we will not fulfil from the current shipment anymore
           current_stock_location.restock(variant, current_on_hand_quantity, current_shipment)
@@ -70,14 +70,14 @@ module Spree
           where(variant: variant).
           order(state: :asc).
           limit(new_on_hand_quantity).
-          update_all(shipment_id: desired_shipment.id, state: :on_hand)
+          update_all(shipment_id: desired_shipment.id, state: :on_hand) # Gotta split units here
 
         current_shipment.
           inventory_units.
           where(variant: variant).
           order(state: :asc).
           limit(quantity - new_on_hand_quantity).
-          update_all(shipment_id: desired_shipment.id, state: :backordered)
+          update_all(shipment_id: desired_shipment.id, state: :backordered)# TODO: Gotta split units here
       end
 
       # We modified the inventory units at the database level for speed reasons.
@@ -86,7 +86,7 @@ module Spree
       desired_shipment.inventory_units.reload
 
       # If the current shipment now has no inventory units left, we won't need it any longer.
-      if current_shipment.inventory_units.length.zero?
+      if current_shipment.inventory_units.sum(&:quantity).zero?
         current_shipment.destroy!
       else
         # The current shipment has changed, so we need to make sure that shipping rates
@@ -118,7 +118,7 @@ module Spree
       if current_stock_location != desired_stock_location
         0
       else
-        current_shipment.inventory_units.where(variant: variant).on_hand.count
+        current_shipment.inventory_units.where(variant: variant).on_hand.sum(&:quantity)
       end
     end
 

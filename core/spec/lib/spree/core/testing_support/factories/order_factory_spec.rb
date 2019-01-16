@@ -74,7 +74,7 @@ RSpec.shared_examples "an order with line items factory" do |expected_order_stat
         # an arbitrary order.
         inventory_units = order.shipments[0].inventory_units.sort_by(&:line_item_id)
 
-        expect(inventory_units.count).to eq(3)
+        expect(inventory_units.sum(&:quantity)).to eq(3)
         expect(inventory_units[0]).to have_attributes(
           order: order,
           shipment: order.shipments[0],
@@ -83,13 +83,6 @@ RSpec.shared_examples "an order with line items factory" do |expected_order_stat
           state: expected_inventory_unit_state
         )
         expect(inventory_units[1]).to have_attributes(
-          order: order,
-          shipment: order.shipments[0],
-          line_item: order.line_items[1],
-          variant: order.line_items[1].variant,
-          state: expected_inventory_unit_state
-        )
-        expect(inventory_units[2]).to have_attributes(
           order: order,
           shipment: order.shipments[0],
           line_item: order.line_items[1],
