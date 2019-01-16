@@ -39,11 +39,7 @@ module Spree
       end
 
       def quantity
-        # Since inventory units don't have a quantity,
-        # make this always 1 for now, leaving ourselves
-        # open to a different possibility in the future,
-        # but this massively simplifies things for now
-        1
+        inventory_unit.quantity
       end
     end
   end
