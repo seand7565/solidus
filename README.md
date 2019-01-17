@@ -14,6 +14,7 @@
 5. [Performance](#performance)
 6. [Developing Solidus](#developing-solidus)
 7. [Contributing](#contributing)
+8. [Sponsors](#sponsors)
 
 ## Summary
 
@@ -42,6 +43,8 @@ combine it with your own custom frontend, admin interface, and API.
 [![Gem](https://img.shields.io/gem/v/solidus.svg)](https://rubygems.org/gems/solidus)
 [![License](http://img.shields.io/badge/license-BSD-yellowgreen.svg)](LICENSE.md)
 [![Slack](http://slack.solidus.io/badge.svg)](http://slack.solidus.io)
+[![Backers on Open Collective](https://opencollective.com/solidus/backers/badge.svg)](#backers)
+[![Sponsors on Open Collective](https://opencollective.com/solidus/sponsors/badge.svg)](#sponsors)
 
 ### Supported by
 
@@ -275,3 +278,12 @@ If you want to write an extension for Solidus, you can use the
 
 Solidus is an open source project and we encourage contributions. Please read
 [CONTRIBUTING.md](CONTRIBUTING.md) before contributing.
+
+
+## Sponsors
+
+Thank you to all our backers! 🙏 [[Become a backer](https://opencollective.com/solidus#backer)]
+
+Support this project by becoming a Key Stakeholder. Your logo will show up here with a link to your website. [[Become a sponsor](https://opencollective.com/solidus#sponsor)]
+
+<img src="https://opencollective.com/solidus/tiers/key-stakeholder.svg">
