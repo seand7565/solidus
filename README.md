@@ -284,6 +284,6 @@ Solidus is an open source project and we encourage contributions. Please read
 
 Thank you to all our backers! 🙏 [[Become a backer](https://opencollective.com/solidus#backer)]
 
-Support this project by becoming a Key Stakeholder. Your logo will show up here with a link to your website. [[Become a sponsor](https://opencollective.com/solidus#sponsor)]
+Support this project by becoming a Key Stakeholder. Your logo will show up here with a link to your website. [[Become a Key Stakeholder](https://opencollective.com/solidus#key-stakeholder)]
 
 <img src="https://opencollective.com/solidus/tiers/key-stakeholder.svg">
