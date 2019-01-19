@@ -70,7 +70,7 @@ module Spree
           where(variant: variant).
           order(state: :asc).
           limit(new_on_hand_quantity).
-          update_all(shipment_id: desired_shipment.id, state: :on_hand) # Gotta split units here
+          update_all(shipment_id: desired_shipment.id, state: :on_hand) # TODO: Gotta split units here
 
         current_shipment.
           inventory_units.
@@ -86,7 +86,7 @@ module Spree
       desired_shipment.inventory_units.reload
 
       # If the current shipment now has no inventory units left, we won't need it any longer.
-      if current_shipment.inventory_units.sum(&:quantity).zero?
+      if current_shipment.inventory_units.length.zero?
         current_shipment.destroy!
       else
         # The current shipment has changed, so we need to make sure that shipping rates

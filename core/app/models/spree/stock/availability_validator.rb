@@ -25,9 +25,9 @@ module Spree
         if line_item.inventory_units.empty?
           Stock::Quantifier.new(line_item.variant).can_supply?(line_item.quantity)
         else
-          quantity_by_stock_location_id = line_item.inventory_units.pending.joins(:shipment).group(:stock_location_id).count #TODO: Fix this
-          quantity_by_stock_location_id.all? do |stock_location_id, quantity|
-            Stock::Quantifier.new(line_item.variant, stock_location_id).can_supply?(quantity)
+          quantity_by_stock_location_id = line_item.inventory_units.pending.group_by{|iu|iu.shipment.stock_location_id}
+          quantity_by_stock_location_id.all? do |stock_location_id, inventory_unit|
+            Stock::Quantifier.new(line_item.variant, stock_location_id).can_supply?(inventory_unit.sum(&:quantity))
           end
         end
       end

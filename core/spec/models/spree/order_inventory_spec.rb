@@ -113,11 +113,11 @@ RSpec.describe Spree::OrderInventory, type: :model do
       it "creates the correct number of inventory units" do
         line_item.update_columns(quantity: 2)
         subject.verify(shipment)
-        expect(line_item.inventory_units.count).to eq(2)
+        expect(line_item.inventory_units.sum(&:quantity)).to eq(2)
 
         line_item.update_columns(quantity: 3)
         subject.verify(shipment)
-        expect(line_item.inventory_units.count).to eq(3)
+        expect(line_item.inventory_units.sum(&:quantity)).to eq(3)
       end
     end
   end
@@ -171,14 +171,14 @@ RSpec.describe Spree::OrderInventory, type: :model do
     end
 
     it 'should be a messed up order' do
-      expect(order.shipments.first.inventory_units_for(line_item.variant).size).to eq(3)
+      expect(order.shipments.first.inventory_units_for(line_item.variant).sum(&:quantity)).to eq(3)
       expect(line_item.quantity).to eq(2)
     end
 
     it 'should decrease the number of inventory units' do
       subject.verify
-      expect(line_item.inventory_units.count).to eq 2
-      expect(order.inventory_units.count).to eq 2
+      expect(line_item.inventory_units.sum(&:quantity)).to eq 2
+      expect(order.inventory_units.sum(&:quantity)).to eq 2
     end
 
     context "order is not completed" do
@@ -219,7 +219,6 @@ RSpec.describe Spree::OrderInventory, type: :model do
       before do
         line_item.inventory_units[0].update_columns(state: 'backordered')
         line_item.inventory_units[1].update_columns(state: 'on_hand')
-        line_item.inventory_units[2].update_columns(state: 'backordered')
       end
 
       it 'should destroy backordered units first' do
@@ -272,7 +271,7 @@ RSpec.describe Spree::OrderInventory, type: :model do
       let(:different_line_item) { create(:line_item, order: order) }
 
       let!(:different_inventory) do
-        shipment.set_up_inventory("on_hand", variant, order, different_line_item)
+        shipment.set_up_inventory("on_hand", variant, order, different_line_item, 1)
       end
 
       it "removes only units that match both line item and variant" do

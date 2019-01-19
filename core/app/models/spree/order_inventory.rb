@@ -19,7 +19,7 @@ module Spree
     # are always unstocked when the order is completed through +shipment.finalize+
     def verify(shipment = nil)
       if order.completed? || shipment.present?
-
+        line_item.reload
         existing_quantity = inventory_units.sum(&:quantity)
         desired_quantity = line_item.quantity - existing_quantity
         if desired_quantity > 0
@@ -63,11 +63,10 @@ module Spree
       pending_units = []
       if variant.should_track_inventory?
         on_hand, back_order = shipment.stock_location.fill_status(variant, quantity)
-
-        on_hand.times { pending_units << shipment.set_up_inventory('on_hand', variant, order, line_item) }
-        back_order.times { pending_units << shipment.set_up_inventory('backordered', variant, order, line_item) }
+        pending_units << shipment.set_up_inventory('on_hand', variant, order, line_item, on_hand) unless on_hand.zero?
+        pending_units << shipment.set_up_inventory('backordered', variant, order, line_item, back_order) unless back_order.zero?
       else
-        quantity.times { pending_units << shipment.set_up_inventory('on_hand', variant, order, line_item) }
+        pending_units << shipment.set_up_inventory('on_hand', variant, order, line_item, on_hand)
       end
 
       # adding to this shipment, and removing from stock_location
@@ -88,17 +87,20 @@ module Spree
     def remove_from_shipment(shipment, quantity)
       return 0 if quantity == 0 || shipment.shipped?
 
-      shipment_units = shipment.inventory_units_for_item(line_item, variant).reject do |variant_unit|
-        # TODO: exclude all 'shipped' states
-        variant_unit.state == 'shipped'
-      end.sort_by(&:state)
+      shipment_units = shipment.inventory_units_for_item(line_item, variant).where.not(:state => 'shipped').sort_by(&:state)
 
       removed_quantity = 0
 
       shipment_units.each do |inventory_unit|
-        break if removed_quantity == quantity #TODO:this? Seems like this is deleting IUs but individually - should just remove from quantity
-        inventory_unit.destroy
-        removed_quantity += 1
+        break if removed_quantity == quantity
+        if inventory_unit.quantity <= quantity
+          inventory_unit_quantity = inventory_unit.quantity
+          inventory_unit.destroy
+          removed_quantity += inventory_unit_quantity
+        else
+          inventory_unit.update(:quantity => inventory_unit.quantity - quantity)
+          removed_quantity += quantity
+        end
       end
 
       if shipment.inventory_units.sum(&:quantity).zero?
