@@ -62,8 +62,8 @@ module Spree
 
           # Turn our raw quantities into a Stock::Package
           package = Spree::Stock::Package.new(stock_location)
-          package.add_multiple(get_units(on_hand), :on_hand)
-          package.add_multiple(get_units(backordered), :backordered)
+          package.add(get_unit(on_hand), :on_hand)
+          package.add(get_unit(backordered), :backordered)
 
           package
         end.compact
@@ -110,10 +110,26 @@ module Spree
         Hash[sorted_availability]
       end
 
-      def get_units(quantities)
+      def build_unit(quantity, line_item_id, variant)
+        Spree::InventoryUnit.new(
+          pending: true,
+          variant: variant,
+          line_item_id: line_item_id,
+          quantity: quantity
+        )
+      end
+
+      def get_unit(quantities)
         # Change our raw quantities back into inventory units
         quantities.flat_map do |variant, quantity|
-          @inventory_units_by_variant[variant].shift(quantity)
+          inventory_units = @inventory_units_by_variant[variant]
+          inventory_units.group_by{|iu|iu.line_item_id}.each do |line_item_id, inventory_units|
+            sum_of_inventory_units = inventory_units.sum(&:quantity)
+            build_unit([sum_of_inventory_units,quantity].min,line_item_id,variant)
+            if sum_of_inventory_units - quantity > 0
+              @inventory_units_by_variant[variant] << build_unit(sum_of_inventory_units - quantity,line_item_id,variant)
+            end
+          end
         end
       end
     end

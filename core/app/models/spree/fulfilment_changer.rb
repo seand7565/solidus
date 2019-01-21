@@ -65,19 +65,38 @@ module Spree
         # These two statements are the heart of this class. We change the number
         # of inventory units requested from one shipment to the other.
         # We order by state, because `'backordered' < 'on_hand'`.
+        updated_quantity = 0
         current_shipment.
           inventory_units.
           where(variant: variant).
-          order(state: :asc).
-          limit(new_on_hand_quantity).
-          update_all(shipment_id: desired_shipment.id, state: :on_hand) # TODO: Gotta split units here
+          order(state: :asc).each do |iu|
+            break if updated_quantity == new_on_hand_quantity
+            if iu.quantity <= new_on_hand_quantity
+              iu.update(shipment_id: desired_shipment.id, state: :on_hand)
+              updated_quantity += iu.quantity
+            else
+              split = iu.split_inventory!(new_on_hand_quantity)
+              split.update(shipment_id: desired_shipment.id, state: :on_hand)
+              updated_quantity += split.quantity
+            end
+          end
 
+        target = quantity - new_on_hand_quantity
+        updated_quantity = 0
         current_shipment.
           inventory_units.
           where(variant: variant).
-          order(state: :asc).
-          limit(quantity - new_on_hand_quantity).
-          update_all(shipment_id: desired_shipment.id, state: :backordered)# TODO: Gotta split units here
+          order(state: :asc).each do |iu|
+            break if updated_quantity == target
+            if iu.quantity <= target
+              iu.update(shipment_id: desired_shipment.id, state: :on_hand)
+              updated_quantity += iu.quantity
+            else
+              split = iu.split_inventory!(target)
+              split.update(shipment_id: desired_shipment.id, state: :on_hand)
+              updated_quantity += split.quantity
+            end
+          end
       end
 
       # We modified the inventory units at the database level for speed reasons.
