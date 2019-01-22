@@ -654,12 +654,13 @@ RSpec.describe Spree::Shipment, type: :model do
     let(:inventory_units) { double }
 
     let(:params) do
-      { variant_id: variant.id, state: 'on_hand', line_item_id: line_item.id }
+      { variant_id: variant.id, state: 'on_hand', line_item_id: line_item.id, quantity: 1}
     end
 
     before { allow(shipment).to receive_messages inventory_units: inventory_units }
 
     it "associates variant and order" do
+      expect(inventory_units).to receive(:find_by)
       expect(inventory_units).to receive(:create).with(params)
       shipment.set_up_inventory('on_hand', variant, order, line_item, 1)
     end

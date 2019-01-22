@@ -62,8 +62,8 @@ module Spree
 
           # Turn our raw quantities into a Stock::Package
           package = Spree::Stock::Package.new(stock_location)
-          package.add(get_unit(on_hand), :on_hand)
-          package.add(get_unit(backordered), :backordered)
+          package.add(get_unit(on_hand), :on_hand) unless on_hand.empty?
+          package.add(get_unit(backordered), :backordered) unless backordered.empty?
 
           package
         end.compact
@@ -111,7 +111,7 @@ module Spree
       end
 
       def build_unit(quantity, line_item_id, variant)
-        Spree::InventoryUnit.new(
+        jack = Spree::InventoryUnit.new(
           pending: true,
           variant: variant,
           line_item_id: line_item_id,
@@ -121,17 +121,18 @@ module Spree
 
       def get_unit(quantities)
         # Change our raw quantities back into inventory units
+        new_unit = ""
         quantities.flat_map do |variant, quantity|
           inventory_units = @inventory_units_by_variant[variant]
-          inventory_units.group_by{|iu|iu.line_item_id}.each do |line_item_id, inventory_units|
-            sum_of_inventory_units = inventory_units.sum(&:quantity)
-            build_unit([sum_of_inventory_units,quantity].min,line_item_id,variant)
-            if sum_of_inventory_units - quantity > 0
-              @inventory_units_by_variant[variant] << build_unit(sum_of_inventory_units - quantity,line_item_id,variant)
-            end
-          end
+          line_item_id = inventory_units.first.line_item_id
+          remaining = inventory_units.sum(&:quantity) - quantity
+          @inventory_units_by_variant[variant] = []
+          @inventory_units_by_variant[variant] = [build_unit(remaining,line_item_id,variant)] if remaining > 0
+          new_unit = build_unit([inventory_units.sum(&:quantity),quantity].min,line_item_id,variant)
         end
+        new_unit
       end
+
     end
   end
 end

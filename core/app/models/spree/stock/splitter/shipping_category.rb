@@ -17,7 +17,6 @@ module Spree
         def split_by_category(package)
           categories = Hash.new { |hash, key| hash[key] = [] }
           package.contents.each do |item|
-            p item
             categories[item.variant.shipping_category_id] << item
           end
           hash_to_packages(categories)
